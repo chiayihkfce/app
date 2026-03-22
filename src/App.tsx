@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, MapPin, CheckCircle2, Trash2, Edit2, ArrowLeft, X, QrCode, Save, RefreshCw, MessageCircle, LogIn } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, ArrowLeft, X, QrCode, Save, RefreshCw, MessageCircle } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
@@ -18,7 +18,7 @@ export interface Stage {
 }
 export interface Game { title: string; stages: Stage[]; }
 
-const VERSION = "3.5.5";
+const VERSION = "3.5.6";
 const DEFAULT_GAME: Game = {
   title: '新專案：新港解謎',
   stages: [{
@@ -166,7 +166,7 @@ export default function App() {
           <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4 overflow-y-auto">
             <div className="bg-white w-full max-w-xl rounded-[50px] p-10 space-y-6 shadow-2xl text-slate-900">
                <div className="flex justify-between items-center"><h3 className="text-2xl font-black italic">STAGE EDITOR</h3><button onClick={() => setEditingStage(null)}><X/></button></div>
-               <div className="space-y-4">
+               <div className="space-y-4 text-slate-900">
                   <div className="grid grid-cols-2 gap-4"><input className="w-full border-b-2 py-3 outline-none font-bold" placeholder="標題" value={editingStage.title} onChange={e => setEditingStage({...editingStage, title: e.target.value})} /><input className="w-full border-b-2 py-3 outline-none font-bold" placeholder="發話者" value={editingStage.speaker} onChange={e => setEditingStage({...editingStage, speaker: e.target.value})} /></div>
                   <textarea className="w-full bg-slate-100 rounded-2xl p-4 h-32 outline-none" placeholder="對話內容" value={editingStage.storyContent} onChange={e => setEditingStage({...editingStage, storyContent: e.target.value})} />
                   <input className="w-full border-b-2 py-3 outline-none" placeholder="圖片連結" value={editingStage.imageUrl} onChange={e => setEditingStage({...editingStage, imageUrl: e.target.value})} />
@@ -188,23 +188,23 @@ export default function App() {
         )}
 
         <div className="max-w-3xl mx-auto">
-           <div className="flex justify-between items-center mb-16">
+           <div className="flex justify-between items-center mb-16 text-slate-900">
               <h1 className="text-4xl font-black">雲端控制台</h1>
-              <div className="flex gap-3 text-slate-900">
+              <div className="flex gap-3">
                  <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v3"), game); alert("雲端發布成功！"); }} className="bg-green-600 text-white px-8 py-4 rounded-3xl font-black flex items-center gap-2 active:scale-95 transition-all"><Save size={20}/> 雲端發布</button>
                  <button onClick={() => { setIsAdmin(false); setIsLogged(false); }} className="bg-white border px-8 py-4 rounded-3xl font-bold flex items-center gap-2 active:scale-95 transition-all"><ArrowLeft size={20}/> 返回遊戲</button>
               </div>
            </div>
            <div className="bg-white p-10 rounded-[50px] shadow-sm border mb-10 text-slate-900">
-              <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-2">專案標題</label>
+              <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-2 text-slate-900">專案標題</label>
               <input className="text-4xl font-black w-full outline-none text-slate-900 focus:text-indigo-600" value={game.title} onChange={e => setGame({...game, title: e.target.value})} />
            </div>
            <div className="space-y-4">
-              <div className="flex justify-between items-center px-4 mb-4"><h3 className="font-black text-slate-400 uppercase text-xs">任務流程</h3><button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '新關卡', speaker: '白鸞卿', storyContent: '新的故事...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: '完成！' })} className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-indigo-100">+ New Mission</button></div>
+              <div className="flex justify-between items-center px-4 mb-4 text-slate-900"><h3 className="font-black text-slate-400 uppercase text-xs">任務流程</h3><button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '新關卡', speaker: '白鸞卿', storyContent: '新的故事...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: '完成！' })} className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-indigo-100">+ New Mission</button></div>
               {game.stages.map((s, i) => (
                 <div key={s.id} className="bg-white p-8 rounded-[40px] border-2 border-transparent hover:border-indigo-100 flex items-center gap-8 transition-all group shadow-sm text-slate-900">
                    <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center font-black text-slate-300 text-2xl group-hover:text-indigo-600">{i+1}</div>
-                   <div className="flex-1">
+                   <div className="flex-1 text-slate-900">
                       <h4 className="text-xl font-black">{s.title}</h4>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{s.unlockType} · {s.unlockAnswer}</p>
                    </div>
@@ -237,7 +237,7 @@ export default function App() {
 }
 
 function LocationPickerHelper({ onPick }: { onPick: (lat: number, lng: number) => void }) {
-  useMapEvents({ click(e) { onPick(e.latlng.lat, e.latlng.lng); } });
+  useMapEvents({ click(e: L.LeafletMouseEvent) { onPick(e.latlng.lat, e.latlng.lng); } });
   return null;
 }
 
