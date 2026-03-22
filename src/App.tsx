@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, Lock, MapPin, Search, HelpCircle, CheckCircle2, LayoutGrid, Settings, Plus, Trash2, Edit2, ArrowLeft, Save, X, Navigation, ImageIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronRight, MapPin, HelpCircle, CheckCircle2, Settings, Plus, Trash2, Edit2, ArrowLeft, X, Navigation } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -39,7 +39,7 @@ export interface Game {
   stages: Stage[];
 }
 
-// --- 預設遊戲資料 (增加座標與圖片範例) ---
+// --- 預設遊戲資料 ---
 const initialData: Game = {
   title: '新港八卦謎蹤',
   description: '穿越清朝與昭和時空，解開失落的卦象真相。',
@@ -71,7 +71,6 @@ const initialData: Game = {
   ]
 };
 
-// --- 子組件：管理者地圖座標拾取器 ---
 function LocationPicker({ lat, lng, onPick }: { lat?: number, lng?: number, onPick: (lat: number, lng: number) => void }) {
   const MapEvents = () => {
     useMapEvents({
@@ -95,7 +94,7 @@ function LocationPicker({ lat, lng, onPick }: { lat?: number, lng?: number, onPi
 
 export default function App() {
   const [game, setGame] = useState<Game>(() => {
-    const saved = localStorage.getItem('enigma_v2_data');
+    const saved = localStorage.getItem('enigma_v3_data');
     return saved ? JSON.parse(saved) : initialData;
   });
 
@@ -107,7 +106,7 @@ export default function App() {
   const [editingStage, setEditingStage] = useState<Stage | null>(null);
 
   useEffect(() => {
-    localStorage.setItem('enigma_v2_data', JSON.stringify(game));
+    localStorage.setItem('enigma_v3_data', JSON.stringify(game));
   }, [game]);
 
   const currentStage = game.stages[currentStageIdx] || game.stages[0];
@@ -121,17 +120,16 @@ export default function App() {
         alert('密碼錯誤！');
       }
     } else if (currentStage.unlockType === 'GPS') {
-      // 在瀏覽器模擬 GPS 檢查
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const dist = L.latLng(pos.coords.latitude, pos.coords.longitude).distanceTo(L.latLng(currentStage.lat!, currentStage.lng!));
-          if (dist < 100) { // 100公尺內
+          if (dist < 100) {
             setSolved(true);
           } else {
             alert(`距離還不夠近喔！(目前距離約 ${Math.round(dist)} 公尺)`);
           }
         },
-        () => alert('無法取得 GPS 權限，請確認是否開啟定位。')
+        () => alert('無法取得 GPS 權限')
       );
     }
   };
@@ -149,16 +147,15 @@ export default function App() {
     }
   };
 
-  // --- 編輯彈窗 ---
   const EditModal = () => {
     if (!editingStage) return null;
     const [temp, setTemp] = useState<Stage>(editingStage);
 
     return (
-      <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 overflow-y-auto">
-        <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="bg-white w-full max-w-lg rounded-3xl overflow-hidden flex flex-col my-auto shadow-2xl">
+      <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 overflow-y-auto text-slate-900">
+        <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="bg-white w-full max-w-lg rounded-3xl overflow-hidden flex flex-col my-auto">
           <div className="p-6 border-b flex justify-between items-center bg-slate-50">
-            <h3 className="font-black text-xl text-slate-800">關卡詳細設定</h3>
+            <h3 className="font-black text-xl">關卡詳細設定</h3>
             <button onClick={() => setEditingStage(null)}><X /></button>
           </div>
           <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
@@ -168,40 +165,34 @@ export default function App() {
             </div>
             <div>
               <label className="text-[10px] font-black uppercase text-slate-400">故事腳本</label>
-              <textarea className="w-full bg-slate-50 rounded-xl p-4 h-32 focus:ring-2 ring-indigo-100 outline-none text-sm" value={temp.storyContent} onChange={e => setTemp({...temp, storyContent: e.target.value})} />
+              <textarea className="w-full bg-slate-50 rounded-xl p-4 h-32 outline-none text-sm" value={temp.storyContent} onChange={e => setTemp({...temp, storyContent: e.target.value})} />
             </div>
             <div>
-              <label className="text-[10px] font-black uppercase text-slate-400">圖片網址 (URL)</label>
-              <input className="w-full border-b-2 border-slate-100 py-2 focus:border-indigo-600 outline-none" placeholder="https://..." value={temp.imageUrl} onChange={e => setTemp({...temp, imageUrl: e.target.value})} />
+              <label className="text-[10px] font-black uppercase text-slate-400">圖片網址</label>
+              <input className="w-full border-b-2 border-slate-100 py-2 outline-none" placeholder="https://..." value={temp.imageUrl} onChange={e => setTemp({...temp, imageUrl: e.target.value})} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400">解鎖方式</label>
+                <label className="text-[10px] font-black uppercase text-slate-400">方式</label>
                 <select className="w-full py-2 bg-white border-b-2" value={temp.unlockType} onChange={e => setTemp({...temp, unlockType: e.target.value as any})}>
                   <option value="PASSWORD">密碼</option>
                   <option value="GPS">GPS 定位</option>
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400">答案 / 密碼</label>
-                <input className="w-full border-b-2 py-2 focus:border-indigo-600 outline-none font-mono" value={temp.unlockAnswer} onChange={e => setTemp({...temp, unlockAnswer: e.target.value})} />
+                <label className="text-[10px] font-black uppercase text-slate-400">密碼</label>
+                <input className="w-full border-b-2 py-2 outline-none font-mono" value={temp.unlockAnswer} onChange={e => setTemp({...temp, unlockAnswer: e.target.value})} />
               </div>
             </div>
-
             {temp.unlockType === 'GPS' && (
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">座標設定 (點擊地圖選取)</label>
+                <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">地圖定位</label>
                 <LocationPicker lat={temp.lat} lng={temp.lng} onPick={(lat, lng) => setTemp({...temp, lat, lng})} />
-                <div className="flex gap-4 text-[10px] font-mono text-slate-500">
-                   <span>LAT: {temp.lat?.toFixed(6) || 'N/A'}</span>
-                   <span>LNG: {temp.lng?.toFixed(6) || 'N/A'}</span>
-                </div>
               </div>
             )}
-            
             <div>
-              <label className="text-[10px] font-black uppercase text-slate-400">過關提示</label>
-              <input className="w-full border-b-2 py-2 focus:border-indigo-600 outline-none" value={temp.hints[0]} onChange={e => setTemp({...temp, hints: [e.target.value]})} />
+              <label className="text-[10px] font-black uppercase text-slate-400">提示</label>
+              <input className="w-full border-b-2 py-2 outline-none" value={temp.hints[0]} onChange={e => setTemp({...temp, hints: [e.target.value]})} />
             </div>
           </div>
           <div className="p-6 bg-slate-50 border-t flex gap-3">
@@ -209,7 +200,7 @@ export default function App() {
                 const newStages = editingStage.id === 'NEW' ? [...game.stages, {...temp, id: Date.now().toString()}] : game.stages.map(s => s.id === temp.id ? temp : s);
                 setGame({...game, stages: newStages});
                 setEditingStage(null);
-             }} className="flex-1 bg-indigo-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2">儲存變更</button>
+             }} className="flex-1 bg-indigo-600 text-white font-bold py-4 rounded-2xl">儲存變更</button>
           </div>
         </motion.div>
       </div>
@@ -219,8 +210,7 @@ export default function App() {
   if (!isAdmin) {
     if (!currentStage) return null;
     return (
-      <div className="flex flex-col min-h-screen bg-slate-950 text-white font-sans selection:bg-amber-500 selection:text-black">
-        {/* Top Progress */}
+      <div className="flex flex-col min-h-screen bg-slate-950 text-white font-sans">
         <div className="p-6 pt-10 pb-4">
            <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black tracking-[0.3em] text-amber-500 uppercase">ENIGMA PHASE {currentStageIdx+1}</span>
@@ -231,7 +221,6 @@ export default function App() {
            </div>
         </div>
 
-        {/* Story Card */}
         <div className="flex-1 px-6 pb-6 flex flex-col">
            <div className="bg-slate-900 rounded-[32px] overflow-hidden flex flex-col flex-1 shadow-2xl border border-slate-800">
               {currentStage.imageUrl && (
@@ -251,13 +240,13 @@ export default function App() {
                  {!solved ? (
                    <div className="mt-8 space-y-4">
                       {currentStage.unlockType === 'PASSWORD' ? (
-                        <div className="relative group">
-                          <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="INPUT DECRYPTION KEY" className="w-full bg-black/50 border-2 border-slate-800 rounded-2xl py-5 px-6 outline-none focus:border-amber-500 transition-all font-mono uppercase tracking-widest placeholder:text-slate-700" />
-                          <button onClick={handleCheckAnswer} className="absolute right-3 top-3 bottom-3 bg-amber-500 text-black px-6 rounded-xl font-black hover:bg-amber-400 transition-colors">OK</button>
+                        <div className="relative">
+                          <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="DECRYPTION KEY" className="w-full bg-black/50 border-2 border-slate-800 rounded-2xl py-5 px-6 outline-none focus:border-amber-500 transition-all font-mono uppercase tracking-widest placeholder:text-slate-700" />
+                          <button onClick={handleCheckAnswer} className="absolute right-3 top-3 bottom-3 bg-amber-500 text-black px-6 rounded-xl font-black">OK</button>
                         </div>
                       ) : (
                         <div className="space-y-3">
-                           <button onClick={handleCheckAnswer} className="w-full bg-amber-500 text-black py-5 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-amber-400">
+                           <button onClick={handleCheckAnswer} className="w-full bg-amber-500 text-black py-5 rounded-2xl font-black flex items-center justify-center gap-2">
                               <MapPin size={20} /> 抵達定位驗證
                            </button>
                            {currentStage.lat && (
@@ -267,12 +256,10 @@ export default function App() {
                            )}
                         </div>
                       )}
-
-                      <button onClick={() => setShowHint(!showHint)} className="w-full py-2 text-slate-600 hover:text-slate-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-colors">
+                      <button onClick={() => setShowHint(!showHint)} className="w-full py-2 text-slate-600 hover:text-slate-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2">
                         <HelpCircle size={14} /> Request Hint
                       </button>
-                      
-                      {showHint && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-amber-200 text-xs italic leading-relaxed">{currentStage.hints[0]}</motion.div>}
+                      {showHint && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-amber-200 text-xs italic">{currentStage.hints[0]}</motion.div>}
                    </div>
                  ) : (
                    <div className="mt-8 bg-green-500/10 border border-green-500/30 p-8 rounded-[24px] text-center">
@@ -285,14 +272,13 @@ export default function App() {
            </div>
         </div>
         <div className="p-6 pt-0 flex justify-between items-center opacity-30 grayscale">
-            <button onClick={() => setIsAdmin(true)} className="text-[10px] font-black uppercase tracking-tighter">Admin Access</button>
+            <button onClick={() => setIsAdmin(true)} className="text-[10px] font-black uppercase">Admin Access</button>
             <span className="text-[10px] font-mono">POWERED BY ENIGMA</span>
         </div>
       </div>
     );
   }
 
-  // --- Admin View ---
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-8 font-sans">
       <EditModal />
@@ -306,7 +292,7 @@ export default function App() {
          </div>
 
          <div className="space-y-6">
-            <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+            <div className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 text-slate-900">
                <label className="text-[10px] font-black uppercase text-slate-300 tracking-widest mb-2 block">Project Name</label>
                <input className="text-3xl font-black w-full outline-none focus:text-indigo-600" value={game.title} onChange={e => setGame({...game, title: e.target.value})} />
             </div>
@@ -324,9 +310,9 @@ export default function App() {
                        <h4 className="font-bold text-slate-800">{s.title}</h4>
                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{s.unlockType} · {s.unlockAnswer}</p>
                     </div>
-                    <div className="flex gap-2">
-                       <button onClick={() => setEditingStage(s)} className="p-3 bg-slate-50 text-slate-400 hover:bg-indigo-600 hover:text-white rounded-xl transition-all"><Edit2 size={16}/></button>
-                       <button onClick={() => { if(confirm('Delete?')) setGame({...game, stages: game.stages.filter(item => item.id !== s.id)}) }} className="p-3 bg-slate-50 text-slate-400 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16}/></button>
+                    <div className="flex gap-2 text-slate-400">
+                       <button onClick={() => setEditingStage(s)} className="p-3 bg-slate-50 hover:bg-indigo-600 hover:text-white rounded-xl transition-all"><Edit2 size={16}/></button>
+                       <button onClick={() => { if(confirm('Delete?')) setGame({...game, stages: game.stages.filter(item => item.id !== s.id)}) }} className="p-3 bg-slate-50 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16}/></button>
                     </div>
                  </div>
                ))}
