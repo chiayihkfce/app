@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, MapPin, HelpCircle, CheckCircle2, Settings, Plus, Trash2, Edit2, ArrowLeft, X, Navigation } from 'lucide-react';
+import { ChevronRight, MapPin, HelpCircle, CheckCircle2, Settings, Plus, Trash2, Edit2, ArrowLeft, X, Navigation, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 // 修正 Leaflet 預設圖示問題
 import 'leaflet/dist/leaflet.css';
@@ -67,7 +68,18 @@ const initialData: Game = {
       lng: 120.347565,
       hints: ['跟著地圖指引前進', '抵達基金會大門口'],
       successMessage: '成功抵達！基金會的門柱上有著奇異的刻痕。',
-    }
+    },
+    {
+        id: 's3',
+        order: 3,
+        title: '第三關：掃描封印',
+        storyContent: '你在基金會的牆角發現了一個神祕的 QR 碼。這可能是前往下一個時空的門鑰。',
+        imageUrl: 'https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?auto=format&fit=crop&q=80&w=800',
+        unlockType: 'QR_CODE',
+        unlockAnswer: 'SHINKANG_POWER',
+        hints: ['掃描現場隱藏的二維碼', '通常就在門牌附近'],
+        successMessage: '封印解開，你聽到了光緒年間的呼喊！',
+      }
   ]
 };
 
@@ -94,7 +106,7 @@ function LocationPicker({ lat, lng, onPick }: { lat?: number, lng?: number, onPi
 
 export default function App() {
   const [game, setGame] = useState<Game>(() => {
-    const saved = localStorage.getItem('enigma_v3_data');
+    const saved = localStorage.getItem('enigma_v4_data');
     return saved ? JSON.parse(saved) : initialData;
   });
 
@@ -104,9 +116,10 @@ export default function App() {
   const [showHint, setShowHint] = useState(false);
   const [solved, setSolved] = useState(false);
   const [editingStage, setEditingStage] = useState<Stage | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('enigma_v3_data', JSON.stringify(game));
+    localStorage.setItem('enigma_v4_data', JSON.stringify(game));
   }, [game]);
 
   const currentStage = game.stages[currentStageIdx] || game.stages[0];
@@ -147,21 +160,42 @@ export default function App() {
     }
   };
 
+  // --- QR 掃描功能 ---
+  useEffect(() => {
+    if (isScanning) {
+      const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      scanner.render((decodedText) => {
+        if (decodedText === currentStage.unlockAnswer) {
+          scanner.clear();
+          setIsScanning(false);
+          setSolved(true);
+        } else {
+          alert("這不是正確的二維碼喔！");
+        }
+      }, (err) => {
+        // 忽略掃描中的報錯
+      });
+      return () => {
+        scanner.clear();
+      };
+    }
+  }, [isScanning, currentStage]);
+
   const EditModal = () => {
     if (!editingStage) return null;
     const [temp, setTemp] = useState<Stage>(editingStage);
 
     return (
       <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[1000] flex items-center justify-center p-4 overflow-y-auto text-slate-900">
-        <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="bg-white w-full max-w-lg rounded-3xl overflow-hidden flex flex-col my-auto">
-          <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+        <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="bg-white w-full max-w-lg rounded-3xl overflow-hidden flex flex-col my-auto shadow-2xl">
+          <div className="p-6 border-b flex justify-between items-center bg-slate-50 text-slate-900">
             <h3 className="font-black text-xl">關卡詳細設定</h3>
             <button onClick={() => setEditingStage(null)}><X /></button>
           </div>
           <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
             <div>
               <label className="text-[10px] font-black uppercase text-slate-400">關卡標題</label>
-              <input className="w-full border-b-2 border-slate-100 py-2 focus:border-indigo-600 outline-none font-bold" value={temp.title} onChange={e => setTemp({...temp, title: e.target.value})} />
+              <input className="w-full border-b-2 border-slate-100 py-2 outline-none font-bold" value={temp.title} onChange={e => setTemp({...temp, title: e.target.value})} />
             </div>
             <div>
               <label className="text-[10px] font-black uppercase text-slate-400">故事腳本</label>
@@ -177,16 +211,17 @@ export default function App() {
                 <select className="w-full py-2 bg-white border-b-2" value={temp.unlockType} onChange={e => setTemp({...temp, unlockType: e.target.value as any})}>
                   <option value="PASSWORD">密碼</option>
                   <option value="GPS">GPS 定位</option>
+                  <option value="QR_CODE">QR 掃碼</option>
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400">密碼</label>
+                <label className="text-[10px] font-black uppercase text-slate-400">密碼 / 碼內容</label>
                 <input className="w-full border-b-2 py-2 outline-none font-mono" value={temp.unlockAnswer} onChange={e => setTemp({...temp, unlockAnswer: e.target.value})} />
               </div>
             </div>
             {temp.unlockType === 'GPS' && (
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block">地圖定位</label>
+                <label className="text-[10px] font-black uppercase text-slate-400 mb-2 block text-slate-900">地圖定位</label>
                 <LocationPicker lat={temp.lat} lng={temp.lng} onPick={(lat, lng) => setTemp({...temp, lat, lng})} />
               </div>
             )}
@@ -211,6 +246,14 @@ export default function App() {
     if (!currentStage) return null;
     return (
       <div className="flex flex-col min-h-screen bg-slate-950 text-white font-sans">
+        {/* QR 掃描器層面 */}
+        {isScanning && (
+          <div className="fixed inset-0 bg-black z-[2000] flex flex-col items-center justify-center p-6">
+             <div id="reader" className="w-full max-w-sm rounded-3xl overflow-hidden mb-8 border-4 border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]"></div>
+             <button onClick={() => setIsScanning(false)} className="bg-white/10 text-white px-8 py-4 rounded-2xl font-black">取消掃描</button>
+          </div>
+        )}
+
         <div className="p-6 pt-10 pb-4">
            <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black tracking-[0.3em] text-amber-500 uppercase">ENIGMA PHASE {currentStageIdx+1}</span>
@@ -244,7 +287,7 @@ export default function App() {
                           <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="DECRYPTION KEY" className="w-full bg-black/50 border-2 border-slate-800 rounded-2xl py-5 px-6 outline-none focus:border-amber-500 transition-all font-mono uppercase tracking-widest placeholder:text-slate-700" />
                           <button onClick={handleCheckAnswer} className="absolute right-3 top-3 bottom-3 bg-amber-500 text-black px-6 rounded-xl font-black">OK</button>
                         </div>
-                      ) : (
+                      ) : currentStage.unlockType === 'GPS' ? (
                         <div className="space-y-3">
                            <button onClick={handleCheckAnswer} className="w-full bg-amber-500 text-black py-5 rounded-2xl font-black flex items-center justify-center gap-2">
                               <MapPin size={20} /> 抵達定位驗證
@@ -255,6 +298,10 @@ export default function App() {
                              </a>
                            )}
                         </div>
+                      ) : (
+                        <button onClick={() => setIsScanning(true)} className="w-full bg-amber-500 text-black py-5 rounded-2xl font-black flex items-center justify-center gap-2">
+                            <QrCode size={20} /> 開啟二維碼掃描器
+                        </button>
                       )}
                       <button onClick={() => setShowHint(!showHint)} className="w-full py-2 text-slate-600 hover:text-slate-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2">
                         <HelpCircle size={14} /> Request Hint
