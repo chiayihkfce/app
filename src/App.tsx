@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, X, QrCode, Save, MessageCircle, Navigation, ChevronUp, User } from 'lucide-react';
+import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, X, QrCode, Save, ChevronUp, User } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { Html5QrcodeScanner } from "html5-qrcode";
@@ -36,7 +36,7 @@ export interface Stage {
 }
 export interface Game { title: string; stages: Stage[]; }
 
-const VERSION = "4.0.1";
+const VERSION = "4.0.2";
 const DEFAULT_GAME: Game = {
   title: '新港八卦謎蹤 - 沉浸版',
   stages: [{
@@ -55,7 +55,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [panelMode, setPanelMode] = useState<'closed' | 'story' | 'backpack' | 'admin'>('story');
   
-  // 管理端專用
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
   const [adminPass, setAdminPass] = useState('');
@@ -93,7 +92,6 @@ export default function App() {
 
   return (
     <div className="h-screen w-full bg-black overflow-hidden relative">
-      {/* 1. 背景地圖：核心體驗 */}
       <div className="absolute inset-0 z-0">
         <MapContainer center={[currentStage.lat || 23.55, currentStage.lng || 120.35]} zoom={17} zoomControl={false} style={{ height: '100%', width: '100%' }}>
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
@@ -110,28 +108,25 @@ export default function App() {
         </MapContainer>
       </div>
 
-      {/* 2. 頂部狀態列 */}
       <div className="absolute top-10 left-6 right-6 z-10 flex justify-between items-center pointer-events-none">
          <div className="bg-black/60 backdrop-blur-xl px-6 py-3 rounded-full border border-white/10 shadow-2xl pointer-events-auto">
             <h1 className="text-white font-black text-sm tracking-widest">{game.title}</h1>
          </div>
          <div className="flex gap-2 pointer-events-auto">
-            <button onClick={() => setPanelMode('backpack')} className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-black shadow-lg shadow-amber-900/40 active:scale-90 transition-all"><Briefcase size={20}/></button>
+            <button onClick={() => setPanelMode('backpack')} className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-black shadow-lg active:scale-90 transition-all"><Briefcase size={20}/></button>
             <button onClick={() => setPanelMode('admin')} className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 active:scale-90 transition-all"><Settings size={20}/></button>
          </div>
       </div>
 
-      {/* 3. 沉浸式浮動面板 (模仿 POPWORLD 底部抽屜) */}
       <AnimatePresence>
         {panelMode !== 'closed' && !isAdmin && (
           <motion.div 
             initial={{ y: "100%" }}
-            animate={{ y: panelMode === 'story' ? "0%" : panelMode === 'backpack' ? "0%" : "100%" }}
+            animate={{ y: "0%" }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="absolute bottom-0 left-0 right-0 z-[100] max-h-[85vh] bg-slate-900/95 backdrop-blur-2xl rounded-t-[40px] border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] flex flex-col"
           >
-            {/* 拖動條 */}
             <div className="w-full flex justify-center py-4 cursor-pointer" onClick={() => setPanelMode('closed')}>
                <div className="w-12 h-1.5 bg-white/20 rounded-full" />
             </div>
@@ -211,9 +206,8 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 4. 管理端全螢幕視窗 */}
       {isAdmin && (
-        <div className="absolute inset-0 z-[1000] bg-slate-50 overflow-y-auto font-sans text-slate-900 pb-20">
+        <div className="absolute inset-0 z-[1000] bg-slate-50 overflow-y-auto font-sans text-slate-900 pb-20 text-center">
            {!isLogged ? (
              <div className="h-screen bg-black flex items-center justify-center p-8 text-white text-center">
                <div className="bg-slate-900 p-12 rounded-[60px] shadow-2xl w-full max-w-sm border border-white/5 space-y-10">
@@ -227,21 +221,21 @@ export default function App() {
              <div className="max-w-4xl mx-auto p-10">
                 {editingStage && (
                   <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4 overflow-y-auto text-slate-900 text-center">
-                    <div className="bg-white w-full max-w-xl rounded-[60px] p-12 space-y-8 shadow-2xl text-slate-900">
-                       <div className="flex justify-between items-center"><h3 className="text-2xl font-black italic tracking-tighter">MISSION EDITOR</h3><button onClick={() => setEditingStage(null)} className="p-3 hover:bg-slate-100 rounded-full transition-colors"><X/></button></div>
+                    <div className="bg-white w-full max-w-xl rounded-[60px] p-12 space-y-8 shadow-2xl">
+                       <div className="flex justify-between items-center"><h3 className="text-2xl font-black italic tracking-tighter text-slate-900">MISSION EDITOR</h3><button onClick={() => setEditingStage(null)} className="p-3 hover:bg-slate-100 rounded-full transition-colors"><X/></button></div>
                        <div className="space-y-6 text-left">
-                          <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase">標題</label><input className="w-full border-b-2 py-3 outline-none font-bold text-xl text-slate-900" value={editingStage.title} onChange={e => setEditingStage({...editingStage, title: e.target.value})} /></div>
-                            <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase">發話者</label><input className="w-full border-b-2 py-3 outline-none font-bold text-xl text-slate-900" value={editingStage.speaker} onChange={e => setEditingStage({...editingStage, speaker: e.target.value})} /></div>
+                          <div className="grid grid-cols-2 gap-6 text-slate-900">
+                            <div className="space-y-2 text-slate-900"><label className="text-[10px] font-black text-slate-400 uppercase">標題</label><input className="w-full border-b-2 py-3 outline-none font-bold text-xl text-slate-900" value={editingStage.title} onChange={e => setEditingStage({...editingStage, title: e.target.value})} /></div>
+                            <div className="space-y-2 text-slate-900"><label className="text-[10px] font-black text-slate-400 uppercase">發話者</label><input className="w-full border-b-2 py-3 outline-none font-bold text-xl text-slate-900" value={editingStage.speaker} onChange={e => setEditingStage({...editingStage, speaker: e.target.value})} /></div>
                           </div>
-                          <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase">對話內容</label><textarea className="w-full bg-slate-50 rounded-[32px] p-6 h-40 outline-none text-base leading-relaxed text-slate-900 shadow-inner" value={editingStage.storyContent} onChange={e => setEditingStage({...editingStage, storyContent: e.target.value})} /></div>
-                          <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase">圖片網址</label><input className="w-full border-b-2 py-3 outline-none text-sm text-blue-600 font-mono" placeholder="https://..." value={editingStage.imageUrl} onChange={e => setEditingStage({...editingStage, imageUrl: e.target.value})} /></div>
-                          <div className="grid grid-cols-2 gap-6">
-                             <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase">解鎖方式</label><select className="w-full border-b-2 py-3 bg-white text-slate-900 font-bold" value={editingStage.unlockType} onChange={e => setEditingStage({...editingStage, unlockType: e.target.value as any})}><option value="PASSWORD">密碼鎖</option><option value="GPS">GPS定位鎖</option><option value="QR_CODE">QR掃碼鎖</option></select></div>
-                             <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase">正確答案</label><input className="w-full border-b-2 py-3 outline-none font-mono text-xl text-slate-900 font-bold" value={editingStage.unlockAnswer} onChange={e => setEditingStage({...editingStage, unlockAnswer: e.target.value})} /></div>
+                          <div className="space-y-2 text-slate-900"><label className="text-[10px] font-black text-slate-400 uppercase">對話內容</label><textarea className="w-full bg-slate-50 rounded-[32px] p-6 h-40 outline-none text-base leading-relaxed text-slate-900 shadow-inner" value={editingStage.storyContent} onChange={e => setEditingStage({...editingStage, storyContent: e.target.value})} /></div>
+                          <div className="space-y-2 text-slate-900"><label className="text-[10px] font-black text-slate-400 uppercase">圖片網址</label><input className="w-full border-b-2 py-3 outline-none text-sm text-blue-600 font-mono" placeholder="https://..." value={editingStage.imageUrl} onChange={e => setEditingStage({...editingStage, imageUrl: e.target.value})} /></div>
+                          <div className="grid grid-cols-2 gap-6 text-slate-900">
+                             <div className="space-y-2 text-slate-900"><label className="text-[10px] font-black text-slate-400 uppercase">解鎖方式</label><select className="w-full border-b-2 py-3 bg-white text-slate-900 font-bold" value={editingStage.unlockType} onChange={e => setEditingStage({...editingStage, unlockType: e.target.value as any})}><option value="PASSWORD">密碼鎖</option><option value="GPS">GPS定位鎖</option><option value="QR_CODE">QR掃碼鎖</option></select></div>
+                             <div className="space-y-2 text-slate-900"><label className="text-[10px] font-black text-slate-400 uppercase">正確答案</label><input className="w-full border-b-2 py-3 outline-none font-mono text-xl text-slate-900 font-bold" value={editingStage.unlockAnswer} onChange={e => setEditingStage({...editingStage, unlockAnswer: e.target.value})} /></div>
                           </div>
                           {editingStage.unlockType === 'GPS' && (
-                            <div className="h-56 rounded-[32px] overflow-hidden border-2 shadow-lg text-slate-900 font-black flex items-center justify-center bg-slate-100 italic">請在地圖模組中設定經緯度 (Lat: {editingStage.lat}, Lng: {editingStage.lng})</div>
+                            <div className="h-56 rounded-[32px] overflow-hidden border-2 shadow-lg text-slate-900 font-black flex items-center justify-center bg-slate-100 italic">請在雲端資料庫設定座標 (Lat: {editingStage.lat}, Lng: {editingStage.lng})</div>
                           )}
                           <button onClick={() => {
                             const newStages = editingStage.id === 'NEW' ? [...game.stages, {...editingStage, id: Date.now().toString()}] : game.stages.map(s => s.id === editingStage.id ? editingStage : s);
@@ -252,29 +246,29 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="flex justify-between items-end mb-20 text-slate-900">
-                   <div className="text-left"><h1 className="text-5xl font-black tracking-tighter uppercase italic">Engine Core</h1><div className="h-1.5 w-20 bg-amber-500 mt-4" /></div>
+                <div className="flex justify-between items-end mb-20 text-slate-900 text-left">
+                   <div className="text-left"><h1 className="text-5xl font-black tracking-tighter uppercase italic text-slate-900 text-left">Engine Core</h1><div className="h-1.5 w-20 bg-amber-500 mt-4 text-left" /></div>
                    <div className="flex gap-4">
-                      <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v4"), game); alert("全球同步已完成！"); }} className="bg-green-600 text-white px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-2xl active:scale-95 transition-all italic tracking-tighter"><Save size={24}/> SYNC TO CLOUD</button>
-                      <button onClick={() => { setIsAdmin(false); setIsLogged(false); setAdminPass(''); }} className="bg-white border-2 px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-lg active:scale-95 transition-all uppercase text-xs tracking-widest text-slate-900 flex items-center justify-center gap-2">Close</button>
+                      <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v4"), game); alert("同步完成！"); }} className="bg-green-600 text-white px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-2xl active:scale-95 transition-all italic tracking-tighter"><Save size={24}/> SYNC TO CLOUD</button>
+                      <button onClick={() => { setIsAdmin(false); setIsLogged(false); setAdminPass(''); }} className="bg-white border-2 px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-lg active:scale-95 transition-all uppercase text-xs tracking-widest text-slate-900">Close</button>
                    </div>
                 </div>
                 
-                <div className="space-y-10">
+                <div className="space-y-10 text-left">
                    <div className="bg-white p-12 rounded-[60px] shadow-sm border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-all text-left">
-                      <div className="flex-1 text-slate-900"><label className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] block mb-3">當前編輯專案名稱</label><input className="text-5xl font-black w-full outline-none text-slate-900 focus:text-indigo-600 transition-colors bg-transparent" value={game.title} onChange={e => setGame({...game, title: e.target.value})} /></div>
-                      <button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '新任務', speaker: '白鸞卿', storyContent: '請在此輸入故事...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: 'Mission Clear' })} className="bg-indigo-600 text-white p-7 rounded-[35px] shadow-2xl hover:rotate-90 transition-all active:scale-90 flex items-center justify-center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                      <div className="flex-1 text-slate-900 text-left"><label className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] block mb-3 text-left">Project Name</label><input className="text-5xl font-black w-full outline-none text-slate-900 focus:text-indigo-600 transition-colors bg-transparent text-left" value={game.title} onChange={e => setGame({...game, title: e.target.value})} /></div>
+                      <button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '新任務', speaker: '白鸞卿', storyContent: '請在此輸入故事...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: 'Mission Clear' })} className="bg-indigo-600 text-white p-7 rounded-[35px] shadow-2xl hover:rotate-90 transition-all active:scale-90 flex items-center justify-center text-center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
                    </div>
 
-                   <div className="grid gap-6">
+                   <div className="grid gap-6 text-left">
                       {game.stages.map((s, i) => (
                         <div key={s.id} className="bg-white p-10 rounded-[60px] border-2 border-transparent hover:border-indigo-100 flex items-center gap-10 transition-all group shadow-sm text-slate-900 text-left">
                            <div className="w-20 h-20 bg-slate-50 rounded-[35px] flex items-center justify-center font-black text-slate-300 text-3xl group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all shadow-inner">{i+1}</div>
-                           <div className="flex-1">
-                              <h4 className="text-2xl font-black text-slate-800 tracking-tight">{s.title}</h4>
-                              <div className="flex gap-3 mt-3 text-slate-400">
-                                 <span className="bg-slate-100 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">{s.unlockType}</span>
-                                 <span className="bg-slate-100 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">Key: {s.unlockAnswer}</span>
+                           <div className="flex-1 text-left">
+                              <h4 className="text-2xl font-black text-slate-800 tracking-tight text-left">{s.title}</h4>
+                              <div className="flex gap-3 mt-3 text-left">
+                                 <span className="bg-slate-100 text-[10px] font-black text-slate-400 px-4 py-1.5 rounded-full uppercase tracking-widest text-left">{s.unlockType}</span>
+                                 <span className="bg-slate-100 text-[10px] font-black text-slate-400 px-4 py-1.5 rounded-full uppercase tracking-widest text-left">Key: {s.unlockAnswer}</span>
                               </div>
                            </div>
                            <div className="flex gap-4">
@@ -290,7 +284,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. QR 掃描器全屏覆蓋 */}
       {isScanning && (
         <div className="absolute inset-0 bg-black z-[2000] flex flex-col items-center justify-center p-10 animate-in zoom-in duration-300">
            <div className="w-full max-w-sm aspect-square bg-slate-900 rounded-[60px] overflow-hidden border-4 border-amber-500 shadow-[0_0_60px_rgba(245,158,11,0.4)] mb-14">
@@ -300,7 +293,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 6. 快速導航按鈕 (當面板收起時) */}
       {panelMode === 'closed' && !isAdmin && (
         <div className="absolute bottom-12 left-0 right-0 z-10 flex justify-center animate-bounce">
            <button onClick={() => setPanelMode('story')} className="bg-amber-500 text-black px-10 py-4 rounded-full font-black flex items-center gap-3 shadow-2xl shadow-amber-900/50">
@@ -312,7 +304,7 @@ export default function App() {
   );
 }
 
-function LocationPickerHelper({ onPick }: { onPick: (lat: number, lng: number) => void }) {
+function MapPickerEvents({ onPick }: { onPick: (lat: number, lng: number) => void }) {
   useMapEvents({ click(e: L.LeafletMouseEvent) { onPick(e.latlng.lat, e.latlng.lng); } });
   return null;
 }
