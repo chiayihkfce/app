@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, ArrowLeft, X, QrCode, Save, RefreshCw, MessageCircle } from 'lucide-react';
+import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, ArrowLeft, X, QrCode, Save, MessageCircle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { Html5QrcodeScanner } from "html5-qrcode";
