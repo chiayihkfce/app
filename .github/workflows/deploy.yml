@@ -25,19 +25,15 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: |
-          cd APP
-          npm install
+        run: npm install
 
       - name: Build
-        run: |
-          cd APP
-          npm run build
+        run: npm run build
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'APP/dist'
+          path: './dist'
 
   deploy:
     needs: build_site
