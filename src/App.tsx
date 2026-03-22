@@ -36,7 +36,7 @@ export interface Stage {
 }
 export interface Game { title: string; stages: Stage[]; }
 
-const VERSION = "4.0.0";
+const VERSION = "4.0.1";
 const DEFAULT_GAME: Game = {
   title: '新港八卦謎蹤 - 沉浸版',
   stages: [{
