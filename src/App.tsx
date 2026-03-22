@@ -18,7 +18,7 @@ export interface Stage {
 }
 export interface Game { title: string; stages: Stage[]; }
 
-const VERSION = "3.5.6";
+const VERSION = "3.5.7";
 const DEFAULT_GAME: Game = {
   title: '新專案：新港解謎',
   stages: [{
@@ -63,7 +63,7 @@ export default function App() {
       scanner.render((text) => {
         if (text.toLowerCase() === currentStage.unlockAnswer.toLowerCase()) {
           scanner.clear(); setIsScanning(false); setSolved(true);
-        } else alert("錯誤！");
+        } else alert("內容不符！");
       }, () => {});
       return () => { scanner.clear().catch(() => {}); };
     }
@@ -72,13 +72,7 @@ export default function App() {
   if (loading) return <div className="h-screen bg-black flex items-center justify-center text-amber-500 font-black animate-pulse uppercase tracking-[0.5em]">Syncing...</div>;
 
   const renderPlayerContent = () => {
-    if (!currentStage) return (
-      <div className="flex flex-col items-center justify-center h-full p-10 text-center">
-        <RefreshCw className="mb-6 opacity-20" size={64}/>
-        <h2 className="text-xl font-black mb-4">尚未偵測到雲端資料庫</h2>
-        <button onClick={() => setActiveTab('admin')} className="bg-amber-500 text-black px-8 py-4 rounded-2xl font-black">前往初始化系統</button>
-      </div>
-    );
+    if (!currentStage) return <div className="p-10 text-white text-center">Loading Data...</div>;
 
     switch (activeTab) {
       case 'story':
@@ -95,7 +89,7 @@ export default function App() {
                {!solved ? (
                  <div className="mt-8 space-y-4">
                     {currentStage.unlockType === 'PASSWORD' ? (
-                      <div className="relative"><input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="在此解密..." className="w-full bg-slate-900 border-2 border-slate-800 rounded-2xl py-5 px-8 outline-none focus:border-amber-500" /><button onClick={() => { if(userInput.trim().toLowerCase() === currentStage.unlockAnswer.toLowerCase()) setSolved(true); else alert('密碼錯誤'); }} className="absolute right-3 top-3 bottom-3 bg-amber-500 text-black px-6 rounded-xl font-black">OK</button></div>
+                      <div className="relative"><input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="在此解密..." className="w-full bg-slate-900 border-2 border-slate-800 rounded-2xl py-5 px-8 outline-none focus:border-amber-500" /><button onClick={() => { if(userInput.trim().toLowerCase() === currentStage.unlockAnswer.toLowerCase()) setSolved(true); else alert('錯誤'); }} className="absolute right-3 top-3 bottom-3 bg-amber-500 text-black px-6 rounded-xl font-black">OK</button></div>
                     ) : currentStage.unlockType === 'GPS' ? (
                       <button onClick={() => navigator.geolocation.getCurrentPosition(pos => {
                         const d = L.latLng(pos.coords.latitude, pos.coords.longitude).distanceTo(L.latLng(currentStage.lat!, currentStage.lng!));
@@ -122,7 +116,7 @@ export default function App() {
               <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
               {game.stages.map((s, idx) => ( s.lat && s.lng && (
                   <Marker key={s.id} position={[s.lat, s.lng]} icon={createCustomIcon(idx === currentStageIdx ? '#f59e0b' : '#475569')}>
-                    <Popup className="custom-popup"><div className="p-3 text-center text-slate-900"><h4 className="font-black mb-1">{s.title}</h4><button onClick={() => { setCurrentStageIdx(idx); setActiveTab('story'); }} className="w-full bg-slate-900 text-amber-500 py-2 rounded-xl text-[10px] font-black">進入此關卡</button></div></Popup>
+                    <Popup className="custom-popup"><div className="p-3 text-center text-slate-900"><h4 className="font-black mb-1">{s.title}</h4><button onClick={() => { setCurrentStageIdx(idx); setActiveTab('story'); }} className="w-full bg-slate-900 text-amber-500 py-2 rounded-xl text-[10px] font-black">進入關卡</button></div></Popup>
                   </Marker>
               )))}
             </MapContainer>
@@ -132,8 +126,8 @@ export default function App() {
         return (
           <div className="h-full bg-black p-10 pt-20">
              <h2 className="text-4xl font-black mb-12 flex items-center gap-4"><Briefcase className="text-amber-500" size={40}/> 道具包</h2>
-             {inventory.length === 0 ? (<div className="mt-20 flex flex-col items-center opacity-20"><Briefcase size={64} className="mb-4"/><p className="font-black uppercase tracking-widest text-xs">空無一物</p></div>) : (
-               <div className="grid grid-cols-2 gap-6">{inventory.map((item, i) => (<div key={i} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] flex flex-col items-center gap-4 text-white text-sm font-black"><BookOpen size={32} className="text-amber-500"/>{item}</div>))}</div>
+             {inventory.length === 0 ? (<div className="mt-20 flex flex-col items-center opacity-20 text-white"><Briefcase size={64} className="mb-4"/><p className="font-black uppercase tracking-widest text-xs">空無一物</p></div>) : (
+               <div className="grid grid-cols-2 gap-6">{inventory.map((item, i) => (<div key={i} className="bg-slate-900 border border-slate-800 p-8 rounded-[40px] flex flex-col items-center gap-4 text-white text-sm font-black text-center"><BookOpen size={32} className="text-amber-500"/>{item}</div>))}</div>
              )}
           </div>
         );
@@ -141,7 +135,7 @@ export default function App() {
         return (
           <div className="h-full bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
              <Settings size={48} className="text-slate-700 mb-8" />
-             <h2 className="text-2xl font-black mb-10 text-white">管理控制核心</h2>
+             <h2 className="text-2xl font-black mb-10 text-white uppercase tracking-widest">Engine Control</h2>
              <button onClick={() => setIsAdmin(true)} className="bg-white text-black px-12 py-5 rounded-3xl font-black shadow-2xl active:scale-95 transition-all">進入系統</button>
           </div>
         );
@@ -152,10 +146,10 @@ export default function App() {
     if (!isLogged) return (
       <div className="h-screen bg-black flex items-center justify-center p-8">
         <div className="bg-slate-900 p-12 rounded-[50px] shadow-2xl w-full max-w-sm text-center border border-white/5 space-y-8">
-           <h1 className="text-3xl font-black tracking-widest text-white">AUTH REQUIRED</h1>
+           <h1 className="text-2xl font-black tracking-widest text-white">ACCESS CODE</h1>
            <input type="password" value={adminPass} onChange={e => setAdminPass(e.target.value)} placeholder="8888" className="w-full bg-black border-2 border-slate-800 rounded-2xl py-5 px-6 outline-none focus:border-amber-500 text-center font-mono text-2xl text-amber-500" />
-           <button onClick={() => { if(adminPass === '8888') setIsLogged(true); else alert('Denied'); }} className="w-full bg-amber-500 text-black py-5 rounded-3xl font-black">CONFIRM</button>
-           <button onClick={() => setIsAdmin(false)} className="text-slate-600 font-bold uppercase text-[10px] tracking-widest">Return to App</button>
+           <button onClick={() => { if(adminPass === '8888') setIsLogged(true); else alert('Denied'); }} className="w-full bg-amber-500 text-black py-5 rounded-3xl font-black">LOGIN</button>
+           <button onClick={() => setIsAdmin(false)} className="text-slate-600 font-bold uppercase text-[10px] tracking-widest">Return</button>
         </div>
       </div>
     );
@@ -164,13 +158,13 @@ export default function App() {
       <div className="min-h-screen bg-slate-50 p-8 text-slate-900 pb-32">
         {editingStage && (
           <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-xl rounded-[50px] p-10 space-y-6 shadow-2xl text-slate-900">
-               <div className="flex justify-between items-center"><h3 className="text-2xl font-black italic">STAGE EDITOR</h3><button onClick={() => setEditingStage(null)}><X/></button></div>
-               <div className="space-y-4 text-slate-900">
-                  <div className="grid grid-cols-2 gap-4"><input className="w-full border-b-2 py-3 outline-none font-bold" placeholder="標題" value={editingStage.title} onChange={e => setEditingStage({...editingStage, title: e.target.value})} /><input className="w-full border-b-2 py-3 outline-none font-bold" placeholder="發話者" value={editingStage.speaker} onChange={e => setEditingStage({...editingStage, speaker: e.target.value})} /></div>
-                  <textarea className="w-full bg-slate-100 rounded-2xl p-4 h-32 outline-none" placeholder="對話內容" value={editingStage.storyContent} onChange={e => setEditingStage({...editingStage, storyContent: e.target.value})} />
+            <div className="bg-white w-full max-w-xl rounded-[50px] p-10 space-y-6 shadow-2xl text-slate-900 text-center">
+               <div className="flex justify-between items-center"><h3 className="text-2xl font-black italic">EDITOR</h3><button onClick={() => setEditingStage(null)}><X/></button></div>
+               <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4"><input className="w-full border-b-2 py-3 outline-none font-bold" placeholder="標題" value={editingStage.title} onChange={e => setEditingStage({...editingStage, title: e.target.value})} /><input className="w-full border-b-2 py-3 outline-none font-bold" placeholder="說話者" value={editingStage.speaker} onChange={e => setEditingStage({...editingStage, speaker: e.target.value})} /></div>
+                  <textarea className="w-full bg-slate-100 rounded-2xl p-4 h-32 outline-none" placeholder="故事內容" value={editingStage.storyContent} onChange={e => setEditingStage({...editingStage, storyContent: e.target.value})} />
                   <input className="w-full border-b-2 py-3 outline-none" placeholder="圖片連結" value={editingStage.imageUrl} onChange={e => setEditingStage({...editingStage, imageUrl: e.target.value})} />
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 text-left">
                      <select className="border-b-2 py-3 bg-white" value={editingStage.unlockType} onChange={e => setEditingStage({...editingStage, unlockType: e.target.value as any})}><option value="PASSWORD">密碼</option><option value="GPS">GPS</option><option value="QR_CODE">QR</option></select>
                      <input className="border-b-2 py-3 outline-none font-mono" placeholder="正確答案" value={editingStage.unlockAnswer} onChange={e => setEditingStage({...editingStage, unlockAnswer: e.target.value})} />
                   </div>
@@ -189,22 +183,22 @@ export default function App() {
 
         <div className="max-w-3xl mx-auto">
            <div className="flex justify-between items-center mb-16 text-slate-900">
-              <h1 className="text-4xl font-black">雲端控制台</h1>
+              <h1 className="text-4xl font-black italic">ENIGMA CORE</h1>
               <div className="flex gap-3">
-                 <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v3"), game); alert("雲端發布成功！"); }} className="bg-green-600 text-white px-8 py-4 rounded-3xl font-black flex items-center gap-2 active:scale-95 transition-all"><Save size={20}/> 雲端發布</button>
-                 <button onClick={() => { setIsAdmin(false); setIsLogged(false); }} className="bg-white border px-8 py-4 rounded-3xl font-bold flex items-center gap-2 active:scale-95 transition-all"><ArrowLeft size={20}/> 返回遊戲</button>
+                 <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v3"), game); alert("雲端發布成功！"); }} className="bg-green-600 text-white px-8 py-4 rounded-3xl font-black flex items-center gap-2 shadow-xl active:scale-95 transition-all"><Save size={20}/> 雲端發布</button>
+                 <button onClick={() => { setIsAdmin(false); setIsLogged(false); }} className="bg-white border px-8 py-4 rounded-3xl font-bold flex items-center gap-2 active:scale-95 transition-all"><ArrowLeft size={20}/> 返回</button>
               </div>
            </div>
            <div className="bg-white p-10 rounded-[50px] shadow-sm border mb-10 text-slate-900">
-              <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-2 text-slate-900">專案標題</label>
+              <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest block mb-2">Project Name</label>
               <input className="text-4xl font-black w-full outline-none text-slate-900 focus:text-indigo-600" value={game.title} onChange={e => setGame({...game, title: e.target.value})} />
            </div>
            <div className="space-y-4">
-              <div className="flex justify-between items-center px-4 mb-4 text-slate-900"><h3 className="font-black text-slate-400 uppercase text-xs">任務流程</h3><button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '新關卡', speaker: '白鸞卿', storyContent: '新的故事...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: '完成！' })} className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-xl shadow-indigo-100">+ New Mission</button></div>
+              <div className="flex justify-between items-center px-4 mb-4 text-slate-900 font-black"><h3 className="uppercase text-xs tracking-[0.2em]">Mission Flow</h3><button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '新關卡', speaker: '旁白', storyContent: '...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: 'Mission Clear' })} className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> New Stage</button></div>
               {game.stages.map((s, i) => (
                 <div key={s.id} className="bg-white p-8 rounded-[40px] border-2 border-transparent hover:border-indigo-100 flex items-center gap-8 transition-all group shadow-sm text-slate-900">
                    <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center font-black text-slate-300 text-2xl group-hover:text-indigo-600">{i+1}</div>
-                   <div className="flex-1 text-slate-900">
+                   <div className="flex-1">
                       <h4 className="text-xl font-black">{s.title}</h4>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{s.unlockType} · {s.unlockAnswer}</p>
                    </div>
@@ -239,8 +233,4 @@ export default function App() {
 function LocationPickerHelper({ onPick }: { onPick: (lat: number, lng: number) => void }) {
   useMapEvents({ click(e: L.LeafletMouseEvent) { onPick(e.latlng.lat, e.latlng.lng); } });
   return null;
-}
-
-function Plus({ size }: { size: number }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
 }
