@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
-// --- 您的專屬 Firebase 設定 ---
 const firebaseConfig = {
   apiKey: "AIzaSyB1zvDchzk-vbfx2Q1P813jXdYEeSYGNSs",
   authDomain: "appdatabase-29393.firebaseapp.com",
@@ -12,6 +12,6 @@ const firebaseConfig = {
   measurementId: "G-Q1Z239924P"
 };
 
-// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
