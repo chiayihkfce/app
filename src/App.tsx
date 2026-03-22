@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, ArrowLeft, X, QrCode, Save, RefreshCw, MessageCircle } from 'lucide-react';
+import { BookOpen, Map as MapIcon, Briefcase, Settings, ChevronRight, CheckCircle2, Trash2, Edit2, X, QrCode, Save, RefreshCw, MessageCircle, MapPin } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { Html5QrcodeScanner } from "html5-qrcode";
@@ -18,10 +18,9 @@ export interface Stage {
 }
 export interface Game { title: string; stages: Stage[]; }
 
-const VERSION = "3.6.0";
-// --- 預設豐富內容：讓您一打開就有遊戲感 ---
+const VERSION = "3.6.1";
 const DEFAULT_GAME: Game = {
-  title: '新港八卦謎蹤 v3.6',
+  title: '新港八卦謎蹤 v3.6.1',
   stages: [
     {
       id: 's1', order: 1, title: '時空的裂縫', speaker: '白鸞卿', 
@@ -101,12 +100,12 @@ export default function App() {
             <div className="relative h-[48vh] w-full">
                <img src={currentStage.imageUrl} className="w-full h-full object-cover grayscale-[20%]" alt="Scene" onError={(e) => e.currentTarget.src="https://images.unsplash.com/photo-1501503060445-73887c28bf13?q=80&w=1000"} />
                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-               <div className="absolute bottom-10 left-8 right-8">
+               <div className="absolute bottom-10 left-8 right-8 text-white">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="bg-amber-500 text-black text-[9px] font-black px-2 py-0.5 rounded tracking-tighter uppercase">Mission {currentStageIdx + 1}</div>
                     <div className="h-[1px] flex-1 bg-white/20" />
                   </div>
-                  <h2 className="text-4xl font-black text-white tracking-tight drop-shadow-2xl">{currentStage.title}</h2>
+                  <h2 className="text-4xl font-black tracking-tight drop-shadow-2xl">{currentStage.title}</h2>
                </div>
             </div>
             <div className="flex-1 bg-black px-8 pt-2 pb-32 flex flex-col">
@@ -123,8 +122,8 @@ export default function App() {
                {!solved ? (
                  <div className="mt-8 space-y-5">
                     {currentStage.unlockType === 'PASSWORD' ? (
-                      <div className="relative group">
-                        <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="INPUT DECRYPTION KEY" className="w-full bg-slate-900/80 border-2 border-slate-800 rounded-[24px] py-5 px-8 outline-none focus:border-amber-500 text-white font-mono tracking-widest transition-all" />
+                      <div className="relative group text-white">
+                        <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="INPUT DECRYPTION KEY" className="w-full bg-slate-900/80 border-2 border-slate-800 rounded-[24px] py-5 px-8 outline-none focus:border-amber-500 font-mono tracking-widest transition-all" />
                         <button onClick={() => { if(userInput.trim().toLowerCase() === currentStage.unlockAnswer.toLowerCase()) setSolved(true); else alert('ERROR: 無法解析該代碼'); }} className="absolute right-3 top-3 bottom-3 bg-amber-500 text-black px-8 rounded-2xl font-black shadow-lg shadow-amber-900/40 active:scale-95 transition-all">OK</button>
                       </div>
                     ) : currentStage.unlockType === 'GPS' ? (
@@ -159,8 +158,8 @@ export default function App() {
                   </Marker>
               )))}
             </MapContainer>
-            <div className="absolute top-12 left-6 z-[1000] bg-black/60 backdrop-blur-xl p-5 rounded-[28px] border border-white/5 shadow-2xl">
-               <h3 className="text-white font-black text-xs uppercase tracking-widest mb-1">Reality Radar</h3>
+            <div className="absolute top-12 left-6 z-[1000] bg-black/60 backdrop-blur-xl p-5 rounded-[28px] border border-white/5 shadow-2xl text-white">
+               <h3 className="font-black text-xs uppercase tracking-widest mb-1">Reality Radar</h3>
                <p className="text-slate-500 text-[9px] font-bold italic">點擊標記點切換任務</p>
             </div>
           </div>
@@ -171,15 +170,15 @@ export default function App() {
              <h2 className="text-5xl font-black text-white mb-2 flex items-center gap-4"><Briefcase className="text-amber-500" size={48}/> 背包</h2>
              <p className="text-slate-600 text-xs font-black tracking-[0.5em] uppercase mb-16 italic">Collection of Artifacts</p>
              {inventory.length === 0 ? (<div className="mt-20 flex flex-col items-center opacity-10 text-white"><Briefcase size={80} className="mb-6"/><p className="font-black uppercase tracking-[0.3em] text-sm">Empty Inventory</p></div>) : (
-               <div className="grid grid-cols-2 gap-6">{inventory.map((item, i) => (<div key={i} className="bg-slate-900/50 border border-slate-800 p-10 rounded-[48px] flex flex-col items-center gap-5 text-white text-sm font-black shadow-2xl transition-all active:scale-95"><div className="w-20 h-20 bg-amber-500/10 rounded-[28px] flex items-center justify-center text-amber-500 shadow-inner"><BookOpen size={36}/></div><span className="tracking-wide text-center">{item}</span></div>))}</div>
+               <div className="grid grid-cols-2 gap-6">{inventory.map((item, i) => (<div key={i} className="bg-slate-900/50 border border-slate-800 p-10 rounded-[48px] flex flex-col items-center gap-5 text-white text-sm font-black shadow-2xl transition-all active:scale-95 text-center"><div className="w-20 h-20 bg-amber-500/10 rounded-[28px] flex items-center justify-center text-amber-500 shadow-inner"><BookOpen size={36}/></div><span className="tracking-wide">{item}</span></div>))}</div>
              )}
           </div>
         );
       case 'admin':
         return (
-          <div className="h-full bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+          <div className="h-full bg-slate-950 flex flex-col items-center justify-center p-10 text-center text-white">
              <div className="w-24 h-24 bg-slate-900 rounded-[40px] flex items-center justify-center text-slate-700 mb-10 border border-white/5 shadow-2xl"><Settings size={40} /></div>
-             <h2 className="text-3xl font-black text-white mb-4 tracking-tight">ENIGMA CORE</h2>
+             <h2 className="text-3xl font-black mb-4 tracking-tight">ENIGMA CORE</h2>
              <p className="text-slate-500 text-sm mb-12 font-medium leading-relaxed max-w-xs mx-auto">Only high-level administrators can modify the timeline archives.</p>
              <button onClick={() => setIsAdmin(true)} className="bg-white text-black px-14 py-5 rounded-[24px] font-black shadow-2xl active:scale-95 transition-all tracking-widest">AUTHENTICATE</button>
           </div>
@@ -189,9 +188,9 @@ export default function App() {
 
   if (isAdmin) {
     if (!isLogged) return (
-      <div className="h-screen bg-black flex items-center justify-center p-8">
+      <div className="h-screen bg-black flex items-center justify-center p-8 text-white">
         <div className="bg-slate-900 p-12 rounded-[60px] shadow-2xl w-full max-w-sm text-center border border-white/5 space-y-10">
-           <h1 className="text-3xl font-black tracking-[0.3em] text-white">LOGIN</h1>
+           <h1 className="text-3xl font-black tracking-[0.3em]">LOGIN</h1>
            <input type="password" value={adminPass} onChange={e => setAdminPass(e.target.value)} placeholder="••••" className="w-full bg-black border-2 border-slate-800 rounded-3xl py-6 px-6 outline-none focus:border-amber-500 text-center font-mono text-3xl text-amber-500 tracking-[0.5em]" />
            <button onClick={() => { if(adminPass === '8888') setIsLogged(true); else alert('拒絕存取'); }} className="w-full bg-amber-500 text-black py-5 rounded-[30px] font-black shadow-xl active:scale-95 transition-all">ENTER SYSTEM</button>
            <button onClick={() => setIsAdmin(false)} className="text-slate-600 font-bold uppercase text-[10px] tracking-widest hover:text-slate-400">Cancel</button>
@@ -205,7 +204,7 @@ export default function App() {
           <div className="fixed inset-0 bg-black/95 z-[2000] flex items-center justify-center p-4 overflow-y-auto">
             <div className="bg-white w-full max-w-xl rounded-[60px] p-12 space-y-8 shadow-2xl text-slate-900">
                <div className="flex justify-between items-center"><h3 className="text-3xl font-black italic tracking-tighter">MISSION EDITOR</h3><button onClick={() => setEditingStage(null)} className="p-3 hover:bg-slate-100 rounded-full transition-colors"><X/></button></div>
-               <div className="space-y-6">
+               <div className="space-y-6 text-slate-900">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">任務標題</label><input className="w-full border-b-2 py-3 outline-none font-bold text-xl text-slate-900" value={editingStage.title} onChange={e => setEditingStage({...editingStage, title: e.target.value})} /></div>
                     <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">發話者</label><input className="w-full border-b-2 py-3 outline-none font-bold text-xl text-slate-900" value={editingStage.speaker} onChange={e => setEditingStage({...editingStage, speaker: e.target.value})} /></div>
@@ -223,23 +222,23 @@ export default function App() {
                   <button onClick={() => {
                     const newStages = editingStage.id === 'NEW' ? [...game.stages, {...editingStage, id: Date.now().toString()}] : game.stages.map(s => s.id === editingStage.id ? editingStage : s);
                     setGame({...game, stages: newStages}); setEditingStage(null);
-                  }} className="w-full bg-slate-900 text-white py-6 rounded-[32px] font-black text-xl shadow-2xl active:scale-95 transition-all">更新時空檔案</button>
+                  }} className="w-full bg-slate-900 text-white py-6 rounded-[32px] font-black text-xl shadow-2xl active:scale-95 transition-all text-center">更新時空檔案</button>
                </div>
             </div>
           </div>
         )}
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto text-slate-900">
            <div className="flex justify-between items-end mb-20">
-              <div><h1 className="text-5xl font-black text-slate-900 tracking-tighter">CLOUD ENGINE</h1><div className="h-1.5 w-20 bg-amber-500 mt-4" /></div>
+              <div><h1 className="text-5xl font-black tracking-tighter">CLOUD ENGINE</h1><div className="h-1.5 w-20 bg-amber-500 mt-4" /></div>
               <div className="flex gap-4">
                  <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v3"), game); alert("全球同步已完成！"); }} className="bg-green-600 text-white px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-2xl active:scale-95 transition-all italic tracking-tighter"><Save size={24}/> PUSH UPDATE</button>
-                 <button onClick={() => { setIsAdmin(false); setIsLogged(false); }} className="bg-white border-2 px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-lg active:scale-95 transition-all uppercase text-xs tracking-widest">Exit</button>
+                 <button onClick={() => { setIsAdmin(false); setIsLogged(false); }} className="bg-white border-2 px-10 py-5 rounded-[30px] font-black flex items-center gap-3 shadow-lg active:scale-95 transition-all uppercase text-xs tracking-widest text-slate-900">Exit</button>
               </div>
            </div>
            
            <div className="space-y-8">
-              <div className="bg-white p-12 rounded-[60px] shadow-sm border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-all">
+              <div className="bg-white p-12 rounded-[60px] shadow-sm border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-all text-slate-900">
                  <div className="flex-1 text-slate-900"><label className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] block mb-3">Project Universe</label><input className="text-5xl font-black w-full outline-none text-slate-900 focus:text-indigo-600 transition-colors bg-transparent" value={game.title} onChange={e => setGame({...game, title: e.target.value})} /></div>
                  <button onClick={() => setEditingStage({ id: 'NEW', order: game.stages.length+1, title: '未命名任務', speaker: '旁白', storyContent: '請在此輸入新的故事起點...', unlockType: 'PASSWORD', unlockAnswer: '1234', hints: [''], successMessage: 'Mission Complete' })} className="bg-indigo-600 text-white p-7 rounded-[35px] shadow-2xl hover:rotate-90 transition-all active:scale-90 flex items-center justify-center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
               </div>
@@ -248,11 +247,11 @@ export default function App() {
                  {game.stages.map((s, i) => (
                    <div key={s.id} className="bg-white p-10 rounded-[60px] border-2 border-transparent hover:border-indigo-100 flex items-center gap-10 transition-all group shadow-sm text-slate-900">
                       <div className="w-20 h-20 bg-slate-50 rounded-[35px] flex items-center justify-center font-black text-slate-300 text-3xl group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all shadow-inner">{i+1}</div>
-                      <div className="flex-1">
+                      <div className="flex-1 text-slate-900">
                          <h4 className="text-2xl font-black text-slate-800 tracking-tight">{s.title}</h4>
-                         <div className="flex gap-3 mt-3">
-                            <span className="bg-slate-100 text-[10px] font-black text-slate-400 px-4 py-1.5 rounded-full uppercase tracking-widest">{s.unlockType}</span>
-                            <span className="bg-slate-100 text-[10px] font-black text-slate-400 px-4 py-1.5 rounded-full uppercase tracking-widest">Key: {s.unlockAnswer}</span>
+                         <div className="flex gap-3 mt-3 text-slate-400">
+                            <span className="bg-slate-100 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">{s.unlockType}</span>
+                            <span className="bg-slate-100 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">Key: {s.unlockAnswer}</span>
                          </div>
                       </div>
                       <div className="flex gap-4">
@@ -274,16 +273,16 @@ export default function App() {
       <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/95 to-transparent pointer-events-none z-[1000]"></div>
       <div className="fixed bottom-8 left-8 right-8 h-22 bg-slate-900/80 backdrop-blur-3xl rounded-[40px] border border-white/5 flex items-center justify-around px-6 z-[1001] shadow-[0_25px_60px_rgba(0,0,0,0.8)]">
          <button onClick={() => setActiveTab('story')} className={`flex flex-col items-center gap-1.5 transition-all pointer-events-auto ${activeTab === 'story' ? 'text-amber-500 scale-110' : 'text-slate-600 opacity-40'}`}>
-            <BookOpen size={26} strokeWidth={activeTab === 'story' ? 3 : 2} /> <span className="text-[10px] font-black uppercase tracking-[0.2em]">Story</span>
+            <BookOpen size={26} strokeWidth={activeTab === 'story' ? 3 : 2} /> <span className="text-[9px] font-black uppercase tracking-[0.2em]">Story</span>
          </button>
          <button onClick={() => setActiveTab('map')} className={`flex flex-col items-center gap-1.5 transition-all pointer-events-auto ${activeTab === 'map' ? 'text-amber-500 scale-110' : 'text-slate-600 opacity-40'}`}>
-            <MapIcon size={26} strokeWidth={activeTab === 'map' ? 3 : 2} /> <span className="text-[10px] font-black uppercase tracking-[0.2em]">Radar</span>
+            <MapIcon size={26} strokeWidth={activeTab === 'map' ? 3 : 2} /> <span className="text-[9px] font-black uppercase tracking-[0.2em]">Radar</span>
          </button>
          <button onClick={() => setActiveTab('backpack')} className={`flex flex-col items-center gap-1.5 transition-all pointer-events-auto ${activeTab === 'backpack' ? 'text-amber-500 scale-110' : 'text-slate-600 opacity-40'}`}>
-            <Briefcase size={26} strokeWidth={activeTab === 'backpack' ? 3 : 2} /> <span className="text-[10px] font-black uppercase tracking-[0.2em]">Items</span>
+            <Briefcase size={26} strokeWidth={activeTab === 'backpack' ? 3 : 2} /> <span className="text-[9px] font-black uppercase tracking-[0.2em]">Items</span>
          </button>
          <button onClick={() => setActiveTab('admin')} className={`flex flex-col items-center gap-1.5 transition-all pointer-events-auto ${activeTab === 'admin' ? 'text-amber-500 scale-110' : 'text-slate-600 opacity-40'}`}>
-            <Settings size={26} strokeWidth={activeTab === 'admin' ? 3 : 2} /> <span className="text-[10px] font-black uppercase tracking-[0.2em]">Engine</span>
+            <Settings size={26} strokeWidth={activeTab === 'admin' ? 3 : 2} /> <span className="text-[9px] font-black uppercase tracking-[0.2em]">Engine</span>
          </button>
       </div>
       {isScanning && (
