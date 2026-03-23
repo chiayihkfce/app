@@ -133,7 +133,17 @@ export default function App() {
                {panelMode === 'story' && (
                  <div className="space-y-6 text-center">
                     <div className="relative h-48 w-full rounded-[32px] overflow-hidden shadow-2xl mb-8">
-                       <img src={currentStage.imageUrl || heroImage} className="w-full h-full object-cover" alt="Scene" />
+                       <img 
+  src={currentStage.imageUrl || heroImage} 
+  className="w-full h-full object-cover" 
+  alt="Scene" 
+  onError={(e) => {
+    const target = e.target as HTMLImageElement;
+    if (target.src !== heroImage) {
+      target.src = heroImage;
+    }
+  }}
+/>
                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent text-white font-black" />
                        <div className="absolute bottom-4 left-6 right-6 flex justify-between items-end text-white font-black"><h2 className="text-2xl">{currentStage.title}</h2><span className="text-[10px] font-mono text-amber-500 bg-black/50 px-2 py-1 rounded">STAGE {currentStageIdx + 1}</span></div>
                     </div>
