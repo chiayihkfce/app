@@ -9,6 +9,7 @@ import { db, storage } from "./firebase";
 import { motion, AnimatePresence } from 'framer-motion';
 
 import 'leaflet/dist/leaflet.css';
+import heroImage from './assets/hero.png';
 
 // --- 打字機組件 ---
 const TypewriterText = ({ text }: { text: string }) => {
