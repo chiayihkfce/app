@@ -168,17 +168,17 @@ export default function App() {
                     {/* --- 標題與評分 --- */}
                     <div className="space-y-4 pt-2">
                        <h2 className="text-3xl font-black text-pwGray7 leading-tight">{currentStage.title}</h2>
-                       <div className="flex items-center gap-6">
-                          <div className="flex flex-row items-center gap-1.5 text-pwDeepYellow">
-                             <Star size={20} fill="currentColor" />
-                             <Star size={20} fill="currentColor" />
-                             <Star size={20} fill="currentColor" />
-                             <Star size={20} fill="currentColor" />
-                             <Star size={20} fill="currentColor" className="text-pwGray2" />
+                       <div className="flex flex-row items-center gap-6 flex-wrap">
+                          <div className="flex flex-row items-center gap-1 flex-nowrap text-yellow-500 whitespace-nowrap">
+                             <Star size={20} fill="currentColor" strokeWidth={0} />
+                             <Star size={20} fill="currentColor" strokeWidth={0} />
+                             <Star size={20} fill="currentColor" strokeWidth={0} />
+                             <Star size={20} fill="currentColor" strokeWidth={0} />
+                             <Star size={20} fill="currentColor" strokeWidth={0} className="text-pwGray2" />
                              <span className="text-pwGray3 font-bold ml-2 text-sm">(4.0)</span>
                           </div>
-                          <div className="h-1 w-1 bg-pwGray2 rounded-full" />
-                          <div className="text-pwGray4 text-sm font-bold flex items-center gap-1"><Clock size={14}/> 預計 15 分鐘</div>
+                          <div className="h-1 w-1 bg-pwGray2 rounded-full hidden sm:block" />
+                          <div className="text-pwGray4 text-sm font-bold flex flex-row items-center gap-1 whitespace-nowrap"><Clock size={14}/> 預計 15 分鐘</div>
                        </div>
                     </div>
 
