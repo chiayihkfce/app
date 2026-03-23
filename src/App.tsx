@@ -349,6 +349,13 @@ export default function App() {
                              <div className="space-y-2"><label className="text-[10px] font-black text-pwGray3 ml-4">Mechanism</label><select className="w-full bg-pwGray1/50 rounded-[20px] py-4 px-6 outline-none font-black appearance-none" value={editingStage.unlockType} onChange={e => setEditingStage({...editingStage, unlockType: e.target.value as any})}><option value="PASSWORD">Password</option><option value="GPS">GPS Range</option><option value="QR_CODE">QR Scanner</option></select></div>
                              <div className="space-y-2"><label className="text-[10px] font-black text-pwGray3 ml-4">Unlock Key</label><input className="w-full bg-pwGray1/50 rounded-[20px] py-4 px-6 outline-none font-black" value={editingStage.unlockAnswer} onChange={e => setEditingStage({...editingStage, unlockAnswer: e.target.value})} /></div>
                           </div>
+                          <div className="h-48 rounded-[24px] overflow-hidden border border-pwGray2 shadow-inner">
+                            <MapContainer center={[editingStage.lat || 23.55, editingStage.lng || 120.35]} zoom={15} style={{ height: '100%', width: '100%' }}>
+                              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                              {editingStage.lat !== undefined && editingStage.lng !== undefined && <Marker position={[editingStage.lat, editingStage.lng]} />}
+                              <MapPickerEvents onPick={(lat, lng) => setEditingStage({...editingStage, lat, lng})} />
+                            </MapContainer>
+                          </div>
                           <button onClick={() => {
                             const newStages = editingStage.id === 'NEW' ? [...game.stages, {...editingStage, id: Date.now().toString()}] : game.stages.map(s => s.id === editingStage.id ? editingStage : s);
                             setGame({...game, stages: newStages}); setEditingStage(null);
