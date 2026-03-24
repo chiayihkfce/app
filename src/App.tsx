@@ -104,27 +104,8 @@ export default function App() {
           scanner.clear(); setIsScanning(false); setSolved(true);
         } else alert("內容不符！");
       }, () => {});
-      return () => { scanner.clear().catch(() => {}); };
-    }
-  }, [isScanning, currentStage]);
-
-  if (loading) return <div className="h-screen bg-white flex items-center justify-center text-blue-500 font-bold animate-pulse flex-col gap-4"><span>系統連線中...</span></div>;
-
-  return (
-    <div className="h-screen w-full bg-slate-50 overflow-hidden relative font-sans text-slate-700">
-      {/* --- 背景地圖 --- */}
-      <div className="absolute inset-0 z-0">
-        <MapContainer center={[currentStage.lat || 23.55, currentStage.lng || 120.35]} zoom={17} zoomControl={false} style={{ height: '100%', width: '100%' }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {game.stages.map((s, idx) => ( s.lat && s.lng && (
-              <Marker key={s.id} position={[s.lat, s.lng]} icon={createCustomIcon(idx === currentStageIdx ? '#2ca6e0' : idx < currentStageIdx ? '#bed53f' : '#bdbdbd', idx === currentStageIdx)} eventHandlers={{ click: () => { setCurrentStageIdx(idx); setPanelMode('story'); setSolved(false); } }} />
-          )))}
-        </MapContainer>
-      </div>
-
-      {/* --- 頂部狀態列 --- */}
       <div className="absolute top-8 left-6 right-6 z-10 flex justify-between items-center pointer-events-none">
-         <div className="bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-2xl shadow-xl text-slate-800 font-bold border-2 border-slate-200 pointer-events-auto flex items-center gap-3">
+         <div className="bg-white px-5 py-2.5 rounded-2xl shadow-xl text-slate-800 font-bold border-2 border-slate-200 pointer-events-auto flex items-center gap-3">
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 border border-blue-200"><MapPin size={18}/></div>
             <span>{game.title}</span>
          </div>
@@ -137,7 +118,7 @@ export default function App() {
       <AnimatePresence>
         {panelMode !== 'closed' && !isAdmin && (
           <motion.div initial={{ y: "100%" }} animate={{ y: "0%" }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 200 }} className="absolute bottom-0 left-0 right-0 z-[100] h-[88vh] bg-white rounded-t-[40px] shadow-[0_-20px_60px_rgba(0,0,0,0.15)] border-t-2 border-slate-200 flex flex-col overflow-hidden">
-            {/* --- 控制條 --- */}
+            {/* --- CONTROL BAR --- */}
             <div className="flex flex-col items-center pt-4 pb-2 shrink-0 border-b-2 border-slate-100">
                <div className="w-12 h-1.5 bg-slate-300 rounded-full mb-4 cursor-pointer" onClick={() => setPanelMode('closed')}/>
                <div className="w-full flex items-center justify-between px-8 pb-2">
@@ -150,7 +131,7 @@ export default function App() {
             <div className="flex-1 overflow-y-auto px-8 pb-12 scroll-smooth">
                {panelMode === 'story' && (
                  <div className="space-y-10 pt-6">
-                    {/* --- 主視覺 --- */}
+                    {/* --- MAIN VISUAL --- */}
                     <div className="relative group">
                        <div className="aspect-[4/3] rounded-[32px] overflow-hidden shadow-2xl border-2 border-slate-300 bg-slate-100">
                           <img 
@@ -165,7 +146,7 @@ export default function App() {
                        </div>
                     </div>
 
-                    {/* --- 標題與評分 (極端強制橫向) --- */}
+                    {/* --- TITLE & STARS --- */}
                     <div className="space-y-4 pt-2">
                        <h2 className="text-3xl font-black text-slate-900 leading-tight tracking-tight">{currentStage.title}</h2>
                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px', flexWrap: 'nowrap' }}>
@@ -184,7 +165,7 @@ export default function App() {
                        </div>
                     </div>
 
-                    {/* --- 故事對話區 (加強框線) --- */}
+                    {/* --- DIALOGUE --- */}
                     <div className="bg-slate-50 p-7 rounded-[32px] border-2 border-slate-200 shadow-sm space-y-4">
                        <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-slate-800 rounded-full flex items-center justify-center text-white font-black text-[11px] border-2 border-white/10 shadow-md">{currentStage.speaker[0]}</div>
@@ -195,7 +176,7 @@ export default function App() {
                        </div>
                     </div>
 
-                    {/* --- 互動操作區 --- */}
+                    {/* --- INTERACTION --- */}
                     <div className="space-y-6">
                        {!solved ? (
                          <div className="space-y-4">
@@ -203,7 +184,7 @@ export default function App() {
                               <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-4">Access Key Required</label>
                                 <input type="text" value={userInput} onChange={e => setUserInput(e.target.value)} placeholder="••••••••" className="w-full bg-white border-2 border-slate-300 focus:border-blue-600 rounded-[24px] py-5 px-8 outline-none font-black text-center text-2xl tracking-[0.3em] transition-all placeholder:text-slate-200 shadow-inner" />
-                                <button onClick={() => { if(userInput.trim().toLowerCase() === currentStage.unlockAnswer.toLowerCase()) setSolved(true); else alert('密碼錯誤'); }} className="w-full bg-slate-900 text-white py-5 rounded-[24px] font-black tracking-widest text-lg shadow-xl active:scale-[0.98] transition-all border border-white/10 uppercase hover:bg-black">Authorize</button>
+                                <button onClick={() => { if(userInput.trim().toLowerCase() === currentStage.unlockAnswer.toLowerCase()) setSolved(true); else alert('密碼錯誤'); }} className="w-full bg-slate-900 text-white py-5 rounded-[24px] font-black tracking-widest text-lg shadow-xl active:scale-[0.98] transition-all border border-white/10 uppercase">Authorize</button>
                               </div>
                             ) : currentStage.unlockType === 'GPS' ? (
                               <button onClick={() => navigator.geolocation.getCurrentPosition(pos => {
@@ -211,9 +192,9 @@ export default function App() {
                                 if(d < 100) setSolved(true); else alert(`範圍外 (${Math.round(d)}m)`);
                               })} className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black tracking-widest text-lg shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all border border-white/10 uppercase">Ping Location</button>
                             ) : (
-                              <button onClick={() => setIsScanning(true)} className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black tracking-widest text-lg shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all border border-white/10 uppercase">Launch Scanner</button>
+                              <button onClick={() => setIsScanning(true)} className="w-full bg-blue-600 text-white py-5 rounded-[24px] font-black tracking-widest text-lg shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all border border-white/10 uppercase"><QrCode size={20} className="inline mr-2" /> Launch Scanner</button>
                             )}
-                            
+
                             <button onClick={() => setShowHint(!showHint)} className="w-full py-4 text-slate-400 font-black text-[10px] uppercase tracking-[0.6em] text-center hover:text-blue-600 transition-colors">Request Intel</button>
                             {showHint && (
                               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-amber-50 border-2 border-amber-200 p-6 rounded-[24px] text-amber-800 font-bold text-sm leading-relaxed text-center shadow-md">
@@ -228,12 +209,12 @@ export default function App() {
                                <p className="text-emerald-700 font-black text-3xl tracking-tighter uppercase">Mission Clear</p>
                                <p className="text-emerald-600/70 font-bold text-sm italic">{currentStage.successMessage}</p>
                             </div>
-                            <button onClick={() => { if(currentStage.itemReward) setInventory([...inventory, currentStage.itemReward]); setSolved(false); setCurrentStageIdx(prev => (prev+1)%game.stages.length); setUserInput(''); setShowHint(false); }} className="w-full bg-emerald-600 text-white py-5 rounded-[24px] font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-emerald-600/20 active:scale-[0.98] transition-all border border-white/10 uppercase">Proceed</button>
+                            <button onClick={() => { if(currentStage.itemReward) setInventory([...inventory, currentStage.itemReward]); setSolved(false); setCurrentStageIdx(prev => (prev+1)%game.stages.length); setUserInput(''); setShowHint(false); }} className="w-full bg-emerald-600 text-white py-5 rounded-[24px] font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-emerald-600/20 active:scale-[0.98] transition-all border border-white/10 uppercase">Proceed <ChevronRight size={20} className="inline ml-2" /></button>
                          </motion.div>
                        )}
                     </div>
 
-                    {/* --- 關於與難度 (加強框線與對比) --- */}
+                    {/* --- INFO CARDS --- */}
                     <div className="grid grid-cols-2 gap-5 pb-10">
                        <div className="bg-white border-2 border-slate-300 p-6 rounded-[32px] space-y-2 shadow-sm text-center">
                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Difficulty</span>
@@ -279,14 +260,13 @@ export default function App() {
                  <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 space-y-12">
                     <div className="relative">
                        <div className="w-36 h-32 bg-white rounded-[56px] flex items-center justify-center text-slate-200 border-4 border-slate-300 shadow-2xl"><Settings size={64} /></div>
-                       <div className="absolute -top-2 -right-2 w-10 h-10 bg-rose-600 rounded-full border-4 border-white shadow-xl animate-ping opacity-75" />
                        <div className="absolute -top-2 -right-2 w-10 h-10 bg-rose-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white font-black text-[10px]">!!</div>
                     </div>
                     <div className="text-center space-y-4">
                        <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase leading-none">Restricted</h2>
                        <p className="text-slate-400 text-sm font-bold max-w-[220px] mx-auto leading-relaxed uppercase tracking-[0.2em] opacity-70">L-Level Clearance Required For System Access</p>
                     </div>
-                    <button onClick={() => setIsAdmin(true)} className="w-full bg-slate-950 text-white py-6 rounded-[32px] font-black tracking-[0.3em] text-lg shadow-2xl active:scale-95 transition-all border border-white/10 uppercase hover:bg-black">Initiate Auth</button>
+                    <button onClick={() => setIsAdmin(true)} className="w-full bg-slate-950 text-white py-6 rounded-[32px] font-black tracking-[0.3em] text-lg shadow-2xl active:scale-95 transition-all border border-white/10 uppercase">Initiate Auth</button>
                  </div>
                )}
             </div>
@@ -294,7 +274,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* --- 管理員編輯介面 (加強視覺) --- */}
+      {/* --- ADMIN FULLSCREEN --- */}
       {isAdmin && (
         <div className="absolute inset-0 z-[1000] bg-white overflow-y-auto text-slate-900 pb-20 font-sans">
            {!isLogged ? (
@@ -306,7 +286,7 @@ export default function App() {
                  </div>
                  <input type="password" value={adminPass} onChange={e => setAdminPass(e.target.value)} placeholder="••••" className="w-full bg-slate-50 border-2 border-slate-300 focus:border-blue-600 rounded-[32px] py-7 px-8 outline-none text-center font-black text-5xl tracking-[0.8em] transition-all shadow-inner" />
                  <div className="space-y-4">
-                    <button onClick={() => { if(adminPass === '8888') setIsLogged(true); else alert('身分證失敗'); }} className="w-full bg-slate-900 text-white py-6 rounded-[28px] font-black tracking-widest shadow-2xl border border-white/10 uppercase text-sm hover:bg-black">Decrypt & Access</button>
+                    <button onClick={() => { if(adminPass === '8888') setIsLogged(true); else alert('身分證失敗'); }} className="w-full bg-slate-900 text-white py-6 rounded-[28px] font-black tracking-widest shadow-2xl border border-white/10 uppercase text-sm">Decrypt & Access</button>
                     <button onClick={() => setIsAdmin(false)} className="text-slate-400 font-black text-[10px] uppercase tracking-[0.5em] hover:text-rose-600 transition-colors">Terminate Link</button>
                  </div>
                </div>
@@ -350,7 +330,7 @@ export default function App() {
                              <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 ml-6 uppercase tracking-[0.3em]">Unlock Mechanism</label><select className="w-full bg-slate-50 border-2 border-slate-200 rounded-[24px] py-5 px-8 outline-none font-black appearance-none focus:border-blue-600 focus:bg-white transition-all" value={editingStage.unlockType} onChange={e => setEditingStage({...editingStage, unlockType: e.target.value as any})}><option value="PASSWORD">Password Auth</option><option value="GPS">GPS Geofencing</option><option value="QR_CODE">QR Code Scan</option></select></div>
                              <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 ml-6 uppercase tracking-[0.3em]">Access Key</label><input className="w-full bg-slate-50 border-2 border-slate-200 rounded-[24px] py-5 px-8 outline-none font-black focus:border-blue-600 focus:bg-white transition-all" value={editingStage.unlockAnswer} onChange={e => setEditingStage({...editingStage, unlockAnswer: e.target.value})} /></div>
                           </div>
-                          
+
                           <div className="h-56 rounded-[32px] overflow-hidden border-2 border-slate-300 shadow-inner bg-slate-100">
                             <MapContainer center={[editingStage.lat || 23.55, editingStage.lng || 120.35]} zoom={15} style={{ height: '100%', width: '100%' }}>
                               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -362,7 +342,7 @@ export default function App() {
                           <button onClick={() => {
                             const newStages = editingStage.id === 'NEW' ? [...game.stages, {...editingStage, id: Date.now().toString()}] : game.stages.map(s => s.id === editingStage.id ? editingStage : s);
                             setGame({...game, stages: newStages}); setEditingStage(null);
-                          }} className="w-full bg-blue-600 text-white py-7 rounded-[32px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-blue-600/30 active:scale-[0.98] transition-all border border-white/20 text-lg hover:bg-blue-700">Commit Node Changes</button>
+                          }} className="w-full bg-blue-600 text-white py-7 rounded-[32px] font-black uppercase tracking-[0.4em] shadow-2xl shadow-blue-600/30 active:scale-[0.98] transition-all border border-white/20 text-lg">Commit Node Changes</button>
                        </div>
                     </div>
                   </div>
@@ -380,7 +360,7 @@ export default function App() {
                       </div>
                    </div>
                    <div className="flex gap-5 w-full lg:w-auto">
-                      <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v4"), game); alert("雲端核心已更新"); }} className="flex-1 lg:flex-none bg-emerald-500 text-white px-10 py-6 rounded-[32px] font-black flex items-center justify-center gap-4 shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all border border-white/10 uppercase text-xs hover:bg-emerald-600">Deploy Changes</button>
+                      <button onClick={async () => { await setDoc(doc(db, "games", "shinkang_v4"), game); alert("雲端核心已更新"); }} className="flex-1 lg:flex-none bg-emerald-500 text-white px-10 py-6 rounded-[32px] font-black flex items-center justify-center gap-4 shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all border border-white/10 uppercase text-xs hover:bg-emerald-600"><Save size={20} className="inline" /> Deploy Changes</button>
                       <button onClick={() => { setIsAdmin(false); setIsLogged(false); setAdminPass(''); }} className="flex-1 lg:flex-none bg-white border-2 border-slate-900 px-10 py-6 rounded-[32px] font-black text-slate-900 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all uppercase tracking-[0.2em] text-xs shadow-lg">Kill Session</button>
                    </div>
                 </div>
@@ -420,7 +400,7 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 全螢幕掃描器 --- */}
+      {/* --- QR SCANNER --- */}
       {isScanning && (
         <div className="absolute inset-0 bg-slate-950 z-[2000] flex flex-col items-center justify-center p-10">
            <div className="w-full max-w-sm aspect-square bg-black rounded-[56px] overflow-hidden border-4 border-blue-600 shadow-[0_0_150px_rgba(37,99,235,0.4)] mb-20 relative">
@@ -431,7 +411,7 @@ export default function App() {
         </div>
       )}
 
-      {/* --- 開啟按鈕 --- */}
+      {/* --- LAUNCH BUTTON --- */}
       {panelMode === 'closed' && !isAdmin && (
         <div className="absolute bottom-12 left-0 right-0 z-10 flex justify-center animate-bounce-slow">
            <button onClick={() => setPanelMode('story')} className="bg-slate-950 text-white px-14 py-7 rounded-full font-black flex items-center gap-5 shadow-[0_30px_60px_rgba(0,0,0,0.4)] border-2 border-white/10 active:scale-95 transition-all uppercase tracking-[0.3em] text-xs hover:bg-black">
@@ -439,15 +419,16 @@ export default function App() {
            </button>
         </div>
       )}
-    </div>
-  );
-}
+      </div>
+      );
+      }
 
-function MapPickerEvents({ onPick }: { onPick: (lat: number, lng: number) => void }) {
-  useMapEvents({ click(e: L.LeafletMouseEvent) { onPick(e.latlng.lat, e.latlng.lng); } });
-  return null;
-}
+      function MapPickerEvents({ onPick }: { onPick: (lat: number, lng: number) => void }) {
+      useMapEvents({ click(e: L.LeafletMouseEvent) { onPick(e.latlng.lat, e.latlng.lng); } });
+      return null;
+      }
 
-const PlusIcon = ({ size = 24 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-);
+      const PlusIcon = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      );
+
